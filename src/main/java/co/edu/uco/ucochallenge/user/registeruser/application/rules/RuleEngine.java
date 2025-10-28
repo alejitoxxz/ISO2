@@ -1,5 +1,7 @@
 package co.edu.uco.ucochallenge.user.registeruser.application.rules;
 
+import java.util.Arrays;
+
 import org.springframework.stereotype.Service;
 
 @Service
@@ -12,12 +14,21 @@ public class RuleEngine {
         }
 
         public void applyRules(final RuleContext context, final String... ruleNames) {
-                for (final String ruleName : ruleNames) {
-                        final Rule rule = ruleRegistry.getRule(ruleName);
-                        if (rule == null) {
-                                throw new IllegalArgumentException("Unknown rule: " + ruleName);
-                        }
-                        rule.evaluate(context);
+                if (ruleNames == null || ruleNames.length == 0) {
+                        return;
                 }
+
+                final Rule[] rules = Arrays.stream(ruleNames)
+                                .map(ruleName -> {
+                                        final Rule rule = ruleRegistry.getRule(ruleName);
+                                        if (rule == null) {
+                                                throw new IllegalArgumentException("Unknown rule: " + ruleName);
+                                        }
+                                        return rule;
+                                })
+                                .toArray(Rule[]::new);
+
+                final var compositeRule = CompositeRule.of(String.join("_", ruleNames), rules);
+                compositeRule.evaluate(context);
         }
 }
