@@ -12,7 +12,8 @@ import co.edu.uco.ucochallenge.user.findusers.application.usecase.FindUsersByFil
 import co.edu.uco.ucochallenge.user.findusers.application.usecase.domain.FindUsersByFilterInputDomain;
 import co.edu.uco.ucochallenge.user.findusers.application.usecase.domain.FindUsersByFilterResponseDomain;
 import co.edu.uco.ucochallenge.user.findusers.application.usecase.domain.UserSummaryDomain;
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;  // ✅
+
 
 @Service
 public class FindUsersByFilterUseCaseImpl implements FindUsersByFilterUseCase {

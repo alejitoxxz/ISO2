@@ -8,7 +8,8 @@ import co.edu.uco.ucochallenge.user.findusers.application.interactor.dto.FindUse
 import co.edu.uco.ucochallenge.user.findusers.application.usecase.FindUsersByFilterUseCase;
 import co.edu.uco.ucochallenge.user.findusers.application.usecase.domain.FindUsersByFilterInputDomain;
 import co.edu.uco.ucochallenge.user.findusers.application.usecase.domain.UserSummaryDomain;
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;  // ✅
+
 
 @Service
 @Transactional(readOnly = true)

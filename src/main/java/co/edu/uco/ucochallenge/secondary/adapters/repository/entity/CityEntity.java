@@ -13,7 +13,7 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
 @Entity
-@Table(name = "Ciudad")
+@Table(name = "ciudad")
 public class CityEntity {
 
 	@Id

@@ -13,7 +13,7 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
 @Entity
-@Table(name = "Usuario")
+@Table(name = "usuario")
 public class UserEntity {
 
 	@Id
@@ -21,7 +21,7 @@ public class UserEntity {
 	private UUID id;
 
 	@ManyToOne
-	@JoinColumn(name = "tipoIdentificacion")
+	@JoinColumn(name = "tipo_identificacion")
 	private IdTypeEntity idType;
 
 	@Column(name = "numeroIdentificacion")
@@ -55,8 +55,10 @@ public class UserEntity {
 	@Column(name = "telefonoMovilConfirmado")
 	private boolean mobileNumberConfirmed;
 
+	@jakarta.persistence.Transient
 	private boolean emailConfirmedIsDefaultValue;
 
+	@jakarta.persistence.Transient
 	private boolean mobileNumberConfirmedIsDefaultValue;
 
 	protected UserEntity() {
