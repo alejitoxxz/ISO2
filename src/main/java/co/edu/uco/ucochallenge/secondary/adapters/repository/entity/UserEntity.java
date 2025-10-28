@@ -11,55 +11,58 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
 
 @Entity
 @Table(name = "usuario")
 public class UserEntity {
 
-	@Id
-	@Column(name = "id")
-	private UUID id;
+    @Id
+    @Column(name = "id")
+    private UUID id;
 
-	@ManyToOne
-	@JoinColumn(name = "tipo_identificacion")
-	private IdTypeEntity idType;
+    @ManyToOne
+    @JoinColumn(name = "tipo_identificacion")
+    private IdTypeEntity idType;
 
-	@Column(name = "numeroIdentificacion")
-	private String idNumber;
+    @Column(name = "numeroIdentificacion")
+    private String idNumber;
 
-	@Column(name = "primerNombre")
-	private String firstName;
+    @Column(name = "primerNombre")
+    private String firstName;
 
-	@Column(name = "segundoNombre")
-	private String secondName;
+    @Column(name = "segundoNombre")
+    private String secondName;
 
-	@Column(name = "primerApellido")
-	private String firstSurname;
+    @Column(name = "primerApellido")
+    private String firstSurname;
 
-	@Column(name = "segundoApellido")
-	private String secondSurname;
+    @Column(name = "segundoApellido")
+    private String secondSurname;
 
-	@ManyToOne
-	@JoinColumn(name = "ciudadResidencia")
-	private CityEntity homeCity;
+    @ManyToOne
+    @JoinColumn(name = "ciudadResidencia")
+    private CityEntity homeCity;
 
-	@Column(name = "email")
-	private String email;
+    @Column(name = "email")
+    private String email;
 
-	@Column(name = "telefonoMovil")
-	private String mobileNumber;
+    @Column(name = "telefonoMovil")
+    private String mobileNumber;
 
-	@Column(name = "emailConfirmado")
-	private boolean emailConfirmed;
+    @Column(name = "emailConfirmado")
+    private boolean emailConfirmed;
 
-	@Column(name = "telefonoMovilConfirmado")
-	private boolean mobileNumberConfirmed;
+    @Column(name = "telefonoMovilConfirmado")
+    private boolean mobileNumberConfirmed;
 
-	@jakarta.persistence.Transient
-	private boolean emailConfirmedIsDefaultValue;
+    @Transient
+    private boolean emailConfirmedIsDefaultValue;
 
-	@jakarta.persistence.Transient
-	private boolean mobileNumberConfirmedIsDefaultValue;
+    @Transient
+    private boolean mobileNumberConfirmedIsDefaultValue;
+
+
 
 	protected UserEntity() {
 		setId(UUIDHelper.getDefault());
