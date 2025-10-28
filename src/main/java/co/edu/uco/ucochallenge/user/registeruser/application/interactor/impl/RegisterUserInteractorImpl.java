@@ -1,5 +1,7 @@
 package co.edu.uco.ucochallenge.user.registeruser.application.interactor.impl;
 
+import java.util.UUID;
+
 import org.springframework.stereotype.Service;
 
 import co.edu.uco.ucochallenge.application.Void;
@@ -13,18 +15,28 @@ import jakarta.transaction.Transactional;
 @Service
 public class RegisterUserInteractorImpl implements RegisterUserInteractor {
 
-	private RegisterUserUseCase useCase;
-	
-	public RegisterUserInteractorImpl(RegisterUserUseCase useCase) {
-		this.useCase = useCase;
-	}
-	
-	@Override
-	public Void execute(RegisterUserInputDTO dto) {
-		//DataMapper /MapStruct
-		
-		RegisterUserDomain registerUserDomain = null;
-		return useCase.execute(registerUserDomain);
-	}
+        private final RegisterUserUseCase useCase;
+
+        public RegisterUserInteractorImpl(final RegisterUserUseCase useCase) {
+                this.useCase = useCase;
+        }
+
+        @Override
+        public Void execute(final RegisterUserInputDTO dto) {
+                var registerUserDomain = RegisterUserDomain.builder()
+                                .id(UUID.randomUUID())
+                                .idType(dto.idType())
+                                .idNumber(dto.idNumber())
+                                .firstName(dto.firstName())
+                                .secondName(dto.secondName())
+                                .firstSurname(dto.firstSurname())
+                                .secondSurname(dto.secondSurname())
+                                .homeCity(dto.homeCity())
+                                .email(dto.email())
+                                .mobileNumber(dto.mobileNumber())
+                                .build();
+
+                return useCase.execute(registerUserDomain);
+        }
 
 }
