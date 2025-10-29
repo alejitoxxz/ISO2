@@ -2,10 +2,13 @@ server:
   port: 8083
 
 spring:
+  profiles:
+    active: dev
+
   datasource:
     url: jdbc:postgresql://localhost:5433/postgres
     username: postgres
-    password: 123456
+    # el password lo lees desde Key Vault; no lo pongas aquí
     driver-class-name: org.postgresql.Driver
 
   jpa:
@@ -17,13 +20,23 @@ spring:
     properties:
       hibernate:
         format_sql: true
-        # dialect es opcional en Spring Boot 3; puedes dejarlo así o activarlo si lo prefieres
-        # dialect: org.hibernate.dialect.PostgreSQLDialect
+    open-in-view: false    # elimina el warning "open-in-view"
 
   sql:
     init:
       mode: never
 
+  jta:
+    enabled: false         # elimina el warning "No JTA platform available"
+
 azure:
   keyvault:
     url: ${AZURE_KEY_VAULT_URL:https://uco-vault.vault.azure.net/}
+
+logging:
+  level:
+    root: INFO
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql: TRACE
+    com.azure.identity: INFO
+    reactor.netty: WARN
