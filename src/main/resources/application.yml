@@ -7,8 +7,7 @@ spring:
 
   datasource:
     url: jdbc:postgresql://localhost:5433/postgres
-    username: postgres
-    # el password lo lees desde Key Vault; no lo pongas aquí
+    # username y password NO se definen aquí; vendrán del Key Vault en el bean
     driver-class-name: org.postgresql.Driver
 
   jpa:
@@ -20,18 +19,18 @@ spring:
     properties:
       hibernate:
         format_sql: true
-    open-in-view: false    # elimina el warning "open-in-view"
+    open-in-view: false
 
   sql:
     init:
       mode: never
 
   jta:
-    enabled: false         # elimina el warning "No JTA platform available"
+    enabled: false
 
 azure:
   keyvault:
-    url: ${AZURE_KEY_VAULT_URL:https://uco-vault.vault.azure.net/}
+    url: https://uco-vault.vault.azure.net/
 
 logging:
   level:
