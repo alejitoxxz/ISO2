@@ -1,59 +1,43 @@
 package co.edu.uco.ucochallenge.user.findusers.application.interactor.dto;
 
-import java.util.Collections;
 import java.util.List;
-import java.util.UUID;
 
-import co.edu.uco.ucochallenge.application.Response;
-import co.edu.uco.ucochallenge.crosscuting.helper.ObjectHelper;
-import co.edu.uco.ucochallenge.crosscuting.helper.TextHelper;
-import co.edu.uco.ucochallenge.crosscuting.helper.UUIDHelper;
+public class FindUsersByFilterOutputDTO {
 
-public final class FindUsersByFilterOutputDTO extends Response<FindUsersByFilterOutputDTO.UsersPage> {
+        private List<UserSummaryDTO> users;
+        private int page;
+        private int size;
+        private long totalElements;
 
-        private FindUsersByFilterOutputDTO(final boolean returnData, final UsersPage data) {
-                super(returnData, data);
+        public List<UserSummaryDTO> getUsers() {
+                return users;
         }
 
-        public static FindUsersByFilterOutputDTO of(final UsersPage data) {
-                return new FindUsersByFilterOutputDTO(true, data);
+        public void setUsers(final List<UserSummaryDTO> users) {
+                this.users = users;
         }
 
-        public static FindUsersByFilterOutputDTO empty() {
-                return new FindUsersByFilterOutputDTO(false, UsersPage.empty());
+        public int getPage() {
+                return page;
         }
 
-        public record UsersPage(List<UserDTO> users, int page, int size, long totalElements, int totalPages) {
-
-                public UsersPage {
-                        users = List.copyOf(ObjectHelper.getDefault(users, Collections.emptyList()));
-                }
-
-                public static UsersPage of(final List<UserDTO> users, final int page, final int size,
-                                final long totalElements, final int totalPages) {
-                        return new UsersPage(users, page, size, totalElements, totalPages);
-                }
-
-                private static UsersPage empty() {
-                        return new UsersPage(Collections.emptyList(), 0, 0, 0, 0);
-                }
+        public void setPage(final int page) {
+                this.page = page;
         }
 
-        public record UserDTO(UUID id, UUID idType, String idNumber, String firstName, String secondName,
-                        String firstSurname, String secondSurname, UUID homeCity, String email, String mobileNumber,
-                        boolean emailConfirmed, boolean mobileNumberConfirmed) {
+        public int getSize() {
+                return size;
+        }
 
-                public UserDTO {
-                        id = UUIDHelper.getDefault(id);
-                        idType = UUIDHelper.getDefault(idType);
-                        idNumber = TextHelper.getDefaultWithTrim(idNumber);
-                        firstName = TextHelper.getDefaultWithTrim(firstName);
-                        secondName = TextHelper.getDefaultWithTrim(secondName);
-                        firstSurname = TextHelper.getDefaultWithTrim(firstSurname);
-                        secondSurname = TextHelper.getDefaultWithTrim(secondSurname);
-                        homeCity = UUIDHelper.getDefault(homeCity);
-                        email = TextHelper.getDefaultWithTrim(email);
-                        mobileNumber = TextHelper.getDefaultWithTrim(mobileNumber);
-                }
+        public void setSize(final int size) {
+                this.size = size;
+        }
+
+        public long getTotalElements() {
+                return totalElements;
+        }
+
+        public void setTotalElements(final long totalElements) {
+                this.totalElements = totalElements;
         }
 }

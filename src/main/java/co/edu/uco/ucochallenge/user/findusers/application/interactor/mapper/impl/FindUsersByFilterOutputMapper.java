@@ -1,13 +1,13 @@
 package co.edu.uco.ucochallenge.user.findusers.application.interactor.mapper.impl;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Component;
 
 import co.edu.uco.ucochallenge.application.interactor.mapper.DomainMapper;
 import co.edu.uco.ucochallenge.user.findusers.application.interactor.dto.FindUsersByFilterOutputDTO;
-import co.edu.uco.ucochallenge.user.findusers.application.interactor.dto.FindUsersByFilterOutputDTO.UserDTO;
-import co.edu.uco.ucochallenge.user.findusers.application.interactor.dto.FindUsersByFilterOutputDTO.UsersPage;
+import co.edu.uco.ucochallenge.user.findusers.application.interactor.dto.UserSummaryDTO;
 import co.edu.uco.ucochallenge.user.findusers.application.usecase.domain.FindUsersByFilterResponseDomain;
 import co.edu.uco.ucochallenge.user.findusers.application.usecase.domain.UserSummaryDomain;
 
@@ -17,55 +17,51 @@ public class FindUsersByFilterOutputMapper
 
         @Override
         public FindUsersByFilterResponseDomain toDomain(final FindUsersByFilterOutputDTO dto) {
-                final List<UserSummaryDomain> users = dto.data().users().stream()
-                                .map(this::mapToDomain)
-                                .toList();
+                final List<UserSummaryDTO> dtoUsers = dto.getUsers();
+                final List<UserSummaryDomain> users = dtoUsers == null
+                                ? List.of()
+                                : dtoUsers.stream()
+                                                .map(this::mapToDomain)
+                                                .collect(Collectors.toList());
 
                 return FindUsersByFilterResponseDomain.builder()
                                 .users(users)
-                                .page(dto.data().page())
-                                .size(dto.data().size())
-                                .totalElements(dto.data().totalElements())
-                                .totalPages(dto.data().totalPages())
+                                .page(dto.getPage())
+                                .size(dto.getSize())
+                                .totalElements(dto.getTotalElements())
                                 .build();
         }
 
         @Override
         public FindUsersByFilterOutputDTO toDto(final FindUsersByFilterResponseDomain domain) {
-                final List<UserDTO> users = domain.getUsers().stream()
+                final List<UserSummaryDTO> users = domain.getUsers()
+                                .stream()
                                 .map(this::mapToDto)
-                                .toList();
+                                .collect(Collectors.toList());
 
-                final UsersPage page = UsersPage.of(users,
-                                domain.getPage(),
-                                domain.getSize(),
-                                domain.getTotalElements(),
-                                domain.getTotalPages());
-
-                return FindUsersByFilterOutputDTO.of(page);
+                final FindUsersByFilterOutputDTO dto = new FindUsersByFilterOutputDTO();
+                dto.setUsers(users);
+                dto.setPage(domain.getPage());
+                dto.setSize(domain.getSize());
+                dto.setTotalElements(domain.getTotalElements());
+                return dto;
         }
 
-        private UserSummaryDomain mapToDomain(final UserDTO dto) {
+        private UserSummaryDomain mapToDomain(final UserSummaryDTO dto) {
                 return UserSummaryDomain.builder()
-                                .id(dto.id())
-                                .idType(dto.idType())
-                                .idNumber(dto.idNumber())
-                                .firstName(dto.firstName())
-                                .secondName(dto.secondName())
-                                .firstSurname(dto.firstSurname())
-                                .secondSurname(dto.secondSurname())
-                                .homeCity(dto.homeCity())
-                                .email(dto.email())
-                                .mobileNumber(dto.mobileNumber())
-                                .emailConfirmed(dto.emailConfirmed())
-                                .mobileNumberConfirmed(dto.mobileNumberConfirmed())
+                                .id(dto.getId())
+                                .firstName(dto.getFirstName())
+                                .firstSurname(dto.getLastName())
+                                .email(dto.getEmail())
                                 .build();
         }
 
-        private UserDTO mapToDto(final UserSummaryDomain domain) {
-                return new UserDTO(domain.getId(), domain.getIdType(), domain.getIdNumber(), domain.getFirstName(),
-                                domain.getSecondName(), domain.getFirstSurname(), domain.getSecondSurname(),
-                                domain.getHomeCity(), domain.getEmail(), domain.getMobileNumber(),
-                                domain.isEmailConfirmed(), domain.isMobileNumberConfirmed());
+        private UserSummaryDTO mapToDto(final UserSummaryDomain domain) {
+                final UserSummaryDTO dto = new UserSummaryDTO();
+                dto.setId(domain.getId());
+                dto.setFirstName(domain.getFirstName());
+                dto.setLastName(domain.getFirstSurname());
+                dto.setEmail(domain.getEmail());
+                return dto;
         }
 }
