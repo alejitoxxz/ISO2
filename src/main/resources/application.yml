@@ -28,6 +28,12 @@ spring:
   jta:
     enabled: false
 
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: https://<AUTH0_DOMAIN>/  # TODO completar dominio Auth0 (con barra final)
+
 azure:
   keyvault:
     url: https://uco-vault.vault.azure.net/
@@ -39,3 +45,10 @@ logging:
     org.hibernate.type.descriptor.sql: TRACE
     com.azure.identity: INFO
     reactor.netty: WARN
+
+jwt:
+  expected-audience: <API_AUDIENCE>            # TODO completar con el Identifier de Auth0
+
+security:
+  gateway:
+    hmac-secret: ${GATEWAY_HMAC_SECRET:4F39B2E91A8D44C2B28C937A7F84E72F}
