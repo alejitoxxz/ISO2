@@ -290,7 +290,17 @@ public class UserEntity {
 		this.emailConfirmedIsDefaultValue = emailConfirmedIsDefaultValue;
 	}
 
-	private void setMobileNumberConfirmedIsDefaultValue(final boolean mobileNumberConfirmedIsDefaultValue) {
-		this.mobileNumberConfirmedIsDefaultValue = mobileNumberConfirmedIsDefaultValue;
-	}
+        private void setMobileNumberConfirmedIsDefaultValue(final boolean mobileNumberConfirmedIsDefaultValue) {
+                this.mobileNumberConfirmedIsDefaultValue = mobileNumberConfirmedIsDefaultValue;
+        }
+
+        public void confirmEmail() {
+                setEmailConfirmed(true);
+                setEmailConfirmedIsDefaultValue(false);
+        }
+
+        public void confirmMobileNumber() {
+                setMobileNumberConfirmed(true);
+                setMobileNumberConfirmedIsDefaultValue(false);
+        }
 }

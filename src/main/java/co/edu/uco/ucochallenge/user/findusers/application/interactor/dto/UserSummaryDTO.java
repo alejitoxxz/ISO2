@@ -8,6 +8,9 @@ public class UserSummaryDTO {
         private String firstName;
         private String lastName;
         private String email;
+        private String mobileNumber;
+        private Boolean emailConfirmed;
+        private Boolean mobileNumberConfirmed;
 
         public UUID getId() {
                 return id;
@@ -39,5 +42,29 @@ public class UserSummaryDTO {
 
         public void setEmail(final String email) {
                 this.email = email;
+        }
+
+        public String getMobileNumber() {
+                return mobileNumber;
+        }
+
+        public void setMobileNumber(final String mobileNumber) {
+                this.mobileNumber = mobileNumber;
+        }
+
+        public Boolean getEmailConfirmed() {
+                return emailConfirmed;
+        }
+
+        public void setEmailConfirmed(final Boolean emailConfirmed) {
+                this.emailConfirmed = emailConfirmed;
+        }
+
+        public Boolean getMobileNumberConfirmed() {
+                return mobileNumberConfirmed;
+        }
+
+        public void setMobileNumberConfirmed(final Boolean mobileNumberConfirmed) {
+                this.mobileNumberConfirmed = mobileNumberConfirmed;
         }
 }
