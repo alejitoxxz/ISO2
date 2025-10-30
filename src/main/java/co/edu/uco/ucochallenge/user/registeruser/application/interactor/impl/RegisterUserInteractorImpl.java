@@ -1,10 +1,9 @@
 package co.edu.uco.ucochallenge.user.registeruser.application.interactor.impl;
 
-import java.util.UUID;
-
 import org.springframework.stereotype.Service;
 
 import co.edu.uco.ucochallenge.application.Void;
+import co.edu.uco.ucochallenge.application.interactor.mapper.DomainMapper;
 import co.edu.uco.ucochallenge.user.registeruser.application.interactor.RegisterUserInteractor;
 import co.edu.uco.ucochallenge.user.registeruser.application.interactor.dto.RegisterUserInputDTO;
 import co.edu.uco.ucochallenge.user.registeruser.application.interactor.usecase.RegisterUserUseCase;
@@ -16,26 +15,17 @@ import jakarta.transaction.Transactional;
 public class RegisterUserInteractorImpl implements RegisterUserInteractor {
 
         private final RegisterUserUseCase useCase;
+        private final DomainMapper<RegisterUserInputDTO, RegisterUserDomain> mapper;
 
-        public RegisterUserInteractorImpl(final RegisterUserUseCase useCase) {
+        public RegisterUserInteractorImpl(final RegisterUserUseCase useCase,
+                        final DomainMapper<RegisterUserInputDTO, RegisterUserDomain> mapper) {
                 this.useCase = useCase;
+                this.mapper = mapper;
         }
 
         @Override
         public Void execute(final RegisterUserInputDTO dto) {
-                var registerUserDomain = RegisterUserDomain.builder()
-                                .id(UUID.randomUUID())
-                                .idType(dto.idType())
-                                .idNumber(dto.idNumber())
-                                .firstName(dto.firstName())
-                                .secondName(dto.secondName())
-                                .firstSurname(dto.firstSurname())
-                                .secondSurname(dto.secondSurname())
-                                .homeCity(dto.homeCity())
-                                .email(dto.email())
-                                .mobileNumber(dto.mobileNumber())
-                                .build();
-
+                var registerUserDomain = mapper.toDomain(dto);
                 return useCase.execute(registerUserDomain);
         }
 

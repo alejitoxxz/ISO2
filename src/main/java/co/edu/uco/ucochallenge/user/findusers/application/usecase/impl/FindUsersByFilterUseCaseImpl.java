@@ -1,65 +1,33 @@
 package co.edu.uco.ucochallenge.user.findusers.application.usecase.impl;
 
-import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
-import co.edu.uco.ucochallenge.crosscuting.helper.UUIDHelper;
-import co.edu.uco.ucochallenge.secondary.adapters.repository.entity.CityEntity;
-import co.edu.uco.ucochallenge.secondary.adapters.repository.entity.IdTypeEntity;
-import co.edu.uco.ucochallenge.secondary.adapters.repository.entity.UserEntity;
-import co.edu.uco.ucochallenge.secondary.ports.repository.UserRepository;
+import co.edu.uco.ucochallenge.crosscuting.exception.BusinessException;
+import co.edu.uco.ucochallenge.crosscuting.notification.Notification;
+import co.edu.uco.ucochallenge.user.findusers.application.port.FindUsersByFilterRepositoryPort;
 import co.edu.uco.ucochallenge.user.findusers.application.usecase.FindUsersByFilterUseCase;
 import co.edu.uco.ucochallenge.user.findusers.application.usecase.domain.FindUsersByFilterInputDomain;
 import co.edu.uco.ucochallenge.user.findusers.application.usecase.domain.FindUsersByFilterResponseDomain;
-import co.edu.uco.ucochallenge.user.findusers.application.usecase.domain.UserSummaryDomain;
-import org.springframework.transaction.annotation.Transactional;  // ✅
-
+import co.edu.uco.ucochallenge.user.findusers.application.usecase.domain.validation.FindUsersByFilterDomainValidator;
 
 @Service
 public class FindUsersByFilterUseCaseImpl implements FindUsersByFilterUseCase {
 
-        private final UserRepository userRepository;
+        private final FindUsersByFilterRepositoryPort repositoryPort;
+        private final FindUsersByFilterDomainValidator validator;
 
-        public FindUsersByFilterUseCaseImpl(final UserRepository userRepository) {
-                this.userRepository = userRepository;
+        public FindUsersByFilterUseCaseImpl(final FindUsersByFilterRepositoryPort repositoryPort) {
+                this.repositoryPort = repositoryPort;
+                this.validator = new FindUsersByFilterDomainValidator();
         }
 
         @Override
-        @Transactional(readOnly = true)
         public FindUsersByFilterResponseDomain execute(final FindUsersByFilterInputDomain domain) {
-                final var pageable = PageRequest.of(domain.getPage(), domain.getSize());
-                final var pageResult = userRepository.findAll(pageable);
+                final Notification notification = validator.validate(domain);
+                if (notification.hasErrors()) {
+                        throw new BusinessException(notification.formattedMessages());
+                }
 
-                final var users = pageResult.getContent().stream()
-                                .map(this::mapToDomain)
-                                .toList();
-
-                return FindUsersByFilterResponseDomain.builder()
-                                .users(users)
-                                .page(pageResult.getNumber())
-                                .size(pageResult.getSize())
-                                .totalElements(pageResult.getTotalElements())
-                                .totalPages(pageResult.getTotalPages())
-                                .build();
-        }
-
-        private UserSummaryDomain mapToDomain(final UserEntity entity) {
-                final IdTypeEntity idTypeEntity = entity.getIdType();
-                final CityEntity cityEntity = entity.getHomeCity();
-
-                return UserSummaryDomain.builder()
-                                .id(entity.getId())
-                                .idType(idTypeEntity != null ? idTypeEntity.getId() : UUIDHelper.getDefault())
-                                .idNumber(entity.getIdNumber())
-                                .firstName(entity.getFirstName())
-                                .secondName(entity.getSecondName())
-                                .firstSurname(entity.getFirstSurname())
-                                .secondSurname(entity.getSecondSurname())
-                                .homeCity(cityEntity != null ? cityEntity.getId() : UUIDHelper.getDefault())
-                                .email(entity.getEmail())
-                                .mobileNumber(entity.getMobileNumber())
-                                .emailConfirmed(entity.isEmailConfirmed())
-                                .mobileNumberConfirmed(entity.isMobileNumberConfirmed())
-                                .build();
+                return repositoryPort.findAll(domain.getPage(), domain.getSize());
         }
 }

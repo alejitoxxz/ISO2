@@ -4,8 +4,16 @@ import java.util.UUID;
 
 import co.edu.uco.ucochallenge.crosscuting.helper.TextHelper;
 import co.edu.uco.ucochallenge.crosscuting.helper.UUIDHelper;
+import co.edu.uco.ucochallenge.crosscuting.notification.Notification;
+import co.edu.uco.ucochallenge.crosscuting.notification.SelfValidating;
 
-public class RegisterUserDomain {
+public class RegisterUserDomain implements SelfValidating {
+
+        private static final String ID_TYPE_REQUIRED_CODE = "REGISTER_USER_ID_TYPE_REQUIRED";
+        private static final String ID_NUMBER_REQUIRED_CODE = "REGISTER_USER_ID_NUMBER_REQUIRED";
+        private static final String FIRST_NAME_REQUIRED_CODE = "REGISTER_USER_FIRST_NAME_REQUIRED";
+        private static final String FIRST_SURNAME_REQUIRED_CODE = "REGISTER_USER_FIRST_SURNAME_REQUIRED";
+        private static final String CONTACT_REQUIRED_CODE = "REGISTER_USER_CONTACT_REQUIRED";
 
         private UUID id;
         private UUID idType;
@@ -93,6 +101,33 @@ public class RegisterUserDomain {
 
         public boolean hasMobileNumber() {
                 return !TextHelper.isEmpty(mobileNumber);
+        }
+
+        @Override
+        public Notification validate() {
+                final var notification = Notification.create();
+
+                if (UUIDHelper.getDefault().equals(idType)) {
+                        notification.addError(ID_TYPE_REQUIRED_CODE, "Identification type is required");
+                }
+
+                if (TextHelper.isEmpty(idNumber)) {
+                        notification.addError(ID_NUMBER_REQUIRED_CODE, "Identification number is required");
+                }
+
+                if (TextHelper.isEmpty(firstName)) {
+                        notification.addError(FIRST_NAME_REQUIRED_CODE, "First name is required");
+                }
+
+                if (TextHelper.isEmpty(firstSurname)) {
+                        notification.addError(FIRST_SURNAME_REQUIRED_CODE, "First surname is required");
+                }
+
+                if (!hasEmail() && !hasMobileNumber()) {
+                        notification.addError(CONTACT_REQUIRED_CODE, "At least one contact channel must be provided");
+                }
+
+                return notification;
         }
 
         public void updateId(final UUID newId) {

@@ -1,84 +1,55 @@
 package co.edu.uco.ucochallenge.user.registeruser.application.interactor.usecase.impl;
 
+import java.util.UUID;
+
 import org.springframework.stereotype.Service;
 
 import co.edu.uco.ucochallenge.application.Void;
-import co.edu.uco.ucochallenge.secondary.adapters.repository.entity.CityEntity;
-import co.edu.uco.ucochallenge.secondary.adapters.repository.entity.IdTypeEntity;
-import co.edu.uco.ucochallenge.secondary.adapters.repository.entity.UserEntity;
-import co.edu.uco.ucochallenge.secondary.ports.repository.UserRepository;
+import co.edu.uco.ucochallenge.crosscuting.exception.BusinessException;
+import co.edu.uco.ucochallenge.crosscuting.notification.Notification;
 import co.edu.uco.ucochallenge.user.registeruser.application.interactor.usecase.RegisterUserUseCase;
 import co.edu.uco.ucochallenge.user.registeruser.application.port.ContactConfirmationPort;
 import co.edu.uco.ucochallenge.user.registeruser.application.port.NotificationPort;
-import co.edu.uco.ucochallenge.user.registeruser.application.rules.RegisterUserRuleNames;
-import co.edu.uco.ucochallenge.user.registeruser.application.rules.RuleContext;
-import co.edu.uco.ucochallenge.user.registeruser.application.rules.RuleEngine;
+import co.edu.uco.ucochallenge.user.registeruser.application.port.RegisterUserRepositoryPort;
 import co.edu.uco.ucochallenge.user.registeruser.application.usecase.domain.RegisterUserDomain;
+import co.edu.uco.ucochallenge.user.registeruser.application.usecase.domain.validation.RegisterUserDomainValidator;
 
 @Service
 public class RegisterUserUseCaseImpl implements RegisterUserUseCase {
 
         private static final String EXECUTOR_IDENTIFIER = "REGISTER_USER_USE_CASE";
 
-        private final UserRepository repository;
-        private final RuleEngine ruleEngine;
-        private final NotificationPort notificationPort;
+        private final RegisterUserRepositoryPort repositoryPort;
         private final ContactConfirmationPort contactConfirmationPort;
+        private final RegisterUserDomainValidator validator;
 
-        public RegisterUserUseCaseImpl(final UserRepository repository, final RuleEngine ruleEngine,
+        public RegisterUserUseCaseImpl(final RegisterUserRepositoryPort repositoryPort,
                         final NotificationPort notificationPort,
                         final ContactConfirmationPort contactConfirmationPort) {
-                this.repository = repository;
-                this.ruleEngine = ruleEngine;
-                this.notificationPort = notificationPort;
+                this.repositoryPort = repositoryPort;
                 this.contactConfirmationPort = contactConfirmationPort;
+                this.validator = new RegisterUserDomainValidator(repositoryPort, notificationPort, UUID::randomUUID);
         }
 
         @Override
         public Void execute(final RegisterUserDomain domain) {
-                var context = RuleContext.builder()
-                                .domain(domain)
-                                .userRepository(repository)
-                                .notificationPort(notificationPort)
-                                .contactConfirmationPort(contactConfirmationPort)
-                                .executorIdentifier(EXECUTOR_IDENTIFIER)
-                                .build();
+                final Notification notification = validator.validate(domain, EXECUTOR_IDENTIFIER);
+                if (notification.hasErrors()) {
+                        throw new BusinessException(notification.formattedMessages());
+                }
 
-                ruleEngine.applyRules(context,
-                                RegisterUserRuleNames.UNIQUE_USER_ID,
-                                RegisterUserRuleNames.UNIQUE_IDENTIFICATION,
-                                RegisterUserRuleNames.UNIQUE_EMAIL,
-                                RegisterUserRuleNames.UNIQUE_MOBILE_NUMBER,
-                                RegisterUserRuleNames.CONFIRM_EMAIL,
-                                RegisterUserRuleNames.CONFIRM_MOBILE_NUMBER);
+                repositoryPort.save(domain);
 
-                var userEntity = mapToEntity(domain);
-                repository.save(userEntity);
+                if (domain.hasEmail()) {
+                        contactConfirmationPort.confirmEmail(domain.getEmail());
+                        domain.markEmailConfirmed();
+                }
+
+                if (domain.hasMobileNumber()) {
+                        contactConfirmationPort.confirmMobileNumber(domain.getMobileNumber());
+                        domain.markMobileNumberConfirmed();
+                }
+
                 return Void.returnVoid();
-        }
-
-        private UserEntity mapToEntity(final RegisterUserDomain domain) {
-                var idTypeEntity = new IdTypeEntity.Builder()
-                                .id(domain.getIdType())
-                                .build();
-
-                var cityEntity = new CityEntity.Builder()
-                                .id(domain.getHomeCity())
-                                .build();
-
-                return new UserEntity.Builder()
-                                .id(domain.getId())
-                                .idType(idTypeEntity)
-                                .idNumber(domain.getIdNumber())
-                                .firstName(domain.getFirstName())
-                                .secondName(domain.getSecondName())
-                                .firstSurname(domain.getFirstSurname())
-                                .secondSurname(domain.getSecondSurname())
-                                .homeCity(cityEntity)
-                                .email(domain.getEmail())
-                                .mobileNumber(domain.getMobileNumber())
-                                .emailConfirmed(domain.isEmailConfirmed())
-                                .mobileNumberConfirmed(domain.isMobileNumberConfirmed())
-                                .build();
         }
 }
