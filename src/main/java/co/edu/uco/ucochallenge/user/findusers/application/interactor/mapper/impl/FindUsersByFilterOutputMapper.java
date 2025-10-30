@@ -53,6 +53,9 @@ public class FindUsersByFilterOutputMapper
                                 .firstName(dto.getFirstName())
                                 .firstSurname(dto.getLastName())
                                 .email(dto.getEmail())
+                                .mobileNumber(dto.getMobileNumber())
+                                .emailConfirmed(Boolean.TRUE.equals(dto.getEmailConfirmed()))
+                                .mobileNumberConfirmed(Boolean.TRUE.equals(dto.getMobileNumberConfirmed()))
                                 .build();
         }
 
@@ -62,6 +65,9 @@ public class FindUsersByFilterOutputMapper
                 dto.setFirstName(domain.getFirstName());
                 dto.setLastName(domain.getFirstSurname());
                 dto.setEmail(domain.getEmail());
+                dto.setMobileNumber(domain.getMobileNumber());
+                dto.setEmailConfirmed(domain.isEmailConfirmed());
+                dto.setMobileNumberConfirmed(domain.isMobileNumberConfirmed());
                 return dto;
         }
 }

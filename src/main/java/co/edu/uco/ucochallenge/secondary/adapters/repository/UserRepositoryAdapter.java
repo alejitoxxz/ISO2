@@ -11,6 +11,7 @@ import co.edu.uco.ucochallenge.secondary.adapters.repository.entity.CityEntity;
 import co.edu.uco.ucochallenge.secondary.adapters.repository.entity.IdTypeEntity;
 import co.edu.uco.ucochallenge.secondary.adapters.repository.entity.UserEntity;
 import co.edu.uco.ucochallenge.secondary.adapters.repository.jpa.SpringDataUserRepository;
+import co.edu.uco.ucochallenge.user.confirmcontact.application.port.ConfirmUserContactRepositoryPort;
 import co.edu.uco.ucochallenge.user.findusers.application.port.FindUsersByFilterRepositoryPort;
 import co.edu.uco.ucochallenge.user.findusers.application.usecase.domain.FindUsersByFilterResponseDomain;
 import co.edu.uco.ucochallenge.user.findusers.application.usecase.domain.UserSummaryDomain;
@@ -19,7 +20,8 @@ import co.edu.uco.ucochallenge.user.registeruser.application.usecase.domain.Exis
 import co.edu.uco.ucochallenge.user.registeruser.application.usecase.domain.RegisterUserDomain;
 
 @Repository
-public class UserRepositoryAdapter implements RegisterUserRepositoryPort, FindUsersByFilterRepositoryPort {
+public class UserRepositoryAdapter implements RegisterUserRepositoryPort, FindUsersByFilterRepositoryPort,
+                ConfirmUserContactRepositoryPort {
 
         private final SpringDataUserRepository repository;
 
@@ -70,6 +72,28 @@ public class UserRepositoryAdapter implements RegisterUserRepositoryPort, FindUs
                                 .totalElements(pageResult.getTotalElements())
                                 .totalPages(pageResult.getTotalPages())
                                 .build();
+        }
+
+        @Override
+        public boolean confirmEmail(final UUID id) {
+                return repository.findById(id)
+                                .map(entity -> {
+                                        entity.confirmEmail();
+                                        repository.save(entity);
+                                        return true;
+                                })
+                                .orElse(false);
+        }
+
+        @Override
+        public boolean confirmMobileNumber(final UUID id) {
+                return repository.findById(id)
+                                .map(entity -> {
+                                        entity.confirmMobileNumber();
+                                        repository.save(entity);
+                                        return true;
+                                })
+                                .orElse(false);
         }
 
         private ExistingUserSnapshotDomain mapToSnapshot(final UserEntity entity) {
