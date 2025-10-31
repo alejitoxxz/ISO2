@@ -15,22 +15,35 @@ public class RegisterUserInputMapper implements DomainMapper<RegisterUserInputDT
         public RegisterUserDomain toDomain(final RegisterUserInputDTO dto) {
                 return RegisterUserDomain.builder()
                                 .id(UUID.randomUUID())
-                                .idType(dto.idType())
+                                .idType(dto.idTypeId())
+                                .idTypeCode(dto.idTypeCode())
                                 .idNumber(dto.idNumber())
                                 .firstName(dto.firstName())
-                                .secondName(dto.secondName())
-                                .firstSurname(dto.firstSurname())
-                                .secondSurname(dto.secondSurname())
-                                .homeCity(dto.homeCity())
+                                .secondName(dto.middleName())
+                                .firstSurname(dto.lastName())
+                                .secondSurname(dto.secondLastName())
+                                .countryId(dto.countryId())
+                                .departmentId(dto.departmentId())
+                                .homeCity(dto.cityId())
                                 .email(dto.email())
-                                .mobileNumber(dto.mobileNumber())
+                                .mobileNumber(dto.mobile())
                                 .build();
         }
 
         @Override
         public RegisterUserInputDTO toDto(final RegisterUserDomain domain) {
-                return new RegisterUserInputDTO(domain.getIdType(), domain.getIdNumber(), domain.getFirstName(),
-                                domain.getSecondName(), domain.getFirstSurname(), domain.getSecondSurname(),
-                                domain.getHomeCity(), domain.getEmail(), domain.getMobileNumber());
+                return new RegisterUserInputDTO(
+                                domain.getIdType(),
+                                domain.getIdTypeCode(),
+                                domain.getIdNumber(),
+                                domain.getFirstName(),
+                                domain.getSecondName(),
+                                domain.getFirstSurname(),
+                                domain.getSecondSurname(),
+                                domain.getEmail(),
+                                domain.getMobileNumber(),
+                                domain.getCountryId(),
+                                domain.getDepartmentId(),
+                                domain.getHomeCity());
         }
 }
