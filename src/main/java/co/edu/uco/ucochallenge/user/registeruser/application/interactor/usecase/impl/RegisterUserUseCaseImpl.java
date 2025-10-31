@@ -1,6 +1,7 @@
 package co.edu.uco.ucochallenge.user.registeruser.application.interactor.usecase.impl;
 
 import java.util.UUID;
+import java.util.function.Supplier;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -11,42 +12,29 @@ import co.edu.uco.ucochallenge.crosscuting.exception.BusinessException;
 import co.edu.uco.ucochallenge.crosscuting.exception.DomainValidationException;
 import co.edu.uco.ucochallenge.crosscuting.helper.TextHelper;
 import co.edu.uco.ucochallenge.crosscuting.helper.UUIDHelper;
-import co.edu.uco.ucochallenge.secondary.ports.repository.CityRepository;
-import co.edu.uco.ucochallenge.secondary.ports.repository.CountryRepository;
-import co.edu.uco.ucochallenge.secondary.ports.repository.IdTypeRepository;
-import co.edu.uco.ucochallenge.secondary.ports.repository.StateRepository;
 import co.edu.uco.ucochallenge.user.registeruser.application.interactor.usecase.RegisterUserUseCase;
 import co.edu.uco.ucochallenge.user.registeruser.application.port.ContactConfirmationPort;
+import co.edu.uco.ucochallenge.user.registeruser.application.port.IdTypeQueryPort;
+import co.edu.uco.ucochallenge.user.registeruser.application.port.LocationQueryPort;
+import co.edu.uco.ucochallenge.user.registeruser.application.port.NotificationPort;
 import co.edu.uco.ucochallenge.user.registeruser.application.port.RegisterUserRepositoryPort;
 import co.edu.uco.ucochallenge.user.registeruser.application.usecase.domain.RegisterUserDomain;
+import lombok.RequiredArgsConstructor;
 
 @Service
 @Transactional
+@RequiredArgsConstructor
 public class RegisterUserUseCaseImpl implements RegisterUserUseCase {
 
         private static final Logger LOGGER = LoggerFactory.getLogger(RegisterUserUseCaseImpl.class);
         private static final int MAX_ID_GENERATION_ATTEMPTS = 5;
 
         private final RegisterUserRepositoryPort repositoryPort;
+        private final NotificationPort notificationPort;
         private final ContactConfirmationPort contactConfirmationPort;
-        private final IdTypeRepository idTypeRepository;
-        private final CountryRepository countryRepository;
-        private final StateRepository stateRepository;
-        private final CityRepository cityRepository;
-
-        public RegisterUserUseCaseImpl(final RegisterUserRepositoryPort repositoryPort,
-                        final ContactConfirmationPort contactConfirmationPort,
-                        final IdTypeRepository idTypeRepository,
-                        final CountryRepository countryRepository,
-                        final StateRepository stateRepository,
-                        final CityRepository cityRepository) {
-                this.repositoryPort = repositoryPort;
-                this.contactConfirmationPort = contactConfirmationPort;
-                this.idTypeRepository = idTypeRepository;
-                this.countryRepository = countryRepository;
-                this.stateRepository = stateRepository;
-                this.cityRepository = cityRepository;
-        }
+        private final IdTypeQueryPort idTypeQueryPort;
+        private final LocationQueryPort locationQueryPort;
+        private final Supplier<UUID> idGenerator;
 
         @Override
         public RegisterUserDomain execute(final RegisterUserDomain domain) {
@@ -73,7 +61,7 @@ public class RegisterUserUseCaseImpl implements RegisterUserUseCase {
 
         private void resolveIdentificationType(final RegisterUserDomain domain) {
                 if (!UUIDHelper.getDefault().equals(domain.getIdType())) {
-                        if (!idTypeRepository.existsById(domain.getIdType())) {
+                        if (!idTypeQueryPort.existsById(domain.getIdType())) {
                                 throw new DomainValidationException("register.user.validation.idtype.required");
                         }
                         return;
@@ -83,25 +71,25 @@ public class RegisterUserUseCaseImpl implements RegisterUserUseCase {
                         throw new DomainValidationException("register.user.validation.idtype.required");
                 }
 
-                final var idType = idTypeRepository.findByCode(domain.getIdTypeCode())
+                final var idType = idTypeQueryPort.findIdByCode(domain.getIdTypeCode())
                                 .orElseThrow(() -> new DomainValidationException("register.user.validation.idtype.required"));
 
-                domain.updateIdType(idType.getId());
+                domain.updateIdType(idType);
         }
 
         private void validateLocation(final RegisterUserDomain domain) {
                 if (isMissing(domain.getCountryId())
-                                || !countryRepository.existsById(domain.getCountryId())) {
+                                || !locationQueryPort.countryExists(domain.getCountryId())) {
                         throw new DomainValidationException("register.user.validation.country.required");
                 }
 
                 if (isMissing(domain.getDepartmentId())
-                                || !stateRepository.existsById(domain.getDepartmentId())) {
+                                || !locationQueryPort.departmentExists(domain.getDepartmentId())) {
                         throw new DomainValidationException("register.user.validation.department.required");
                 }
 
                 if (isMissing(domain.getHomeCity())
-                                || !cityRepository.existsById(domain.getHomeCity())) {
+                                || !locationQueryPort.cityExists(domain.getHomeCity())) {
                         throw new DomainValidationException("register.user.validation.city.required");
                 }
         }
@@ -111,7 +99,7 @@ public class RegisterUserUseCaseImpl implements RegisterUserUseCase {
                 int attempts = 0;
 
                 while (repositoryPort.existsById(candidateId) && attempts < MAX_ID_GENERATION_ATTEMPTS) {
-                        candidateId = UUID.randomUUID();
+                        candidateId = idGenerator.get();
                         attempts++;
                 }
 
