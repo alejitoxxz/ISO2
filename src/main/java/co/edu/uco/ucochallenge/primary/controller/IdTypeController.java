@@ -11,7 +11,7 @@ import co.edu.uco.ucochallenge.idtype.application.dto.IdTypeDTO;
 import co.edu.uco.ucochallenge.idtype.application.interactor.usecase.IdTypeQueryService;
 
 @RestController
-@RequestMapping("/uco-challenge/api/v1/id-types")
+@RequestMapping("/uco-challenge/api/v1/idtypes")
 public class IdTypeController {
 
         private final IdTypeQueryService idTypeQueryService;
