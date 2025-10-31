@@ -52,3 +52,9 @@ jwt:
 security:
   gateway:
     hmac-secret: ${GATEWAY_HMAC_SECRET:4F39B2E91A8D44C2B28C937A7F84E72F}
+
+external:
+  parameters:
+    base-url: http://localhost:8080/parameters/api/v1/parameters
+  messages:
+    base-url: http://localhost:8081/messages/api/v1/messages
