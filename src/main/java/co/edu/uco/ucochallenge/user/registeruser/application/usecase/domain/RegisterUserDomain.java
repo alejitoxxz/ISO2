@@ -9,19 +9,24 @@ import co.edu.uco.ucochallenge.crosscuting.notification.SelfValidating;
 
 public class RegisterUserDomain implements SelfValidating {
 
-        private static final String ID_TYPE_REQUIRED_CODE = "REGISTER_USER_ID_TYPE_REQUIRED";
-        private static final String ID_NUMBER_REQUIRED_CODE = "REGISTER_USER_ID_NUMBER_REQUIRED";
-        private static final String FIRST_NAME_REQUIRED_CODE = "REGISTER_USER_FIRST_NAME_REQUIRED";
-        private static final String FIRST_SURNAME_REQUIRED_CODE = "REGISTER_USER_FIRST_SURNAME_REQUIRED";
-        private static final String CONTACT_REQUIRED_CODE = "REGISTER_USER_CONTACT_REQUIRED";
+        private static final String ID_NUMBER_REQUIRED_CODE = "register.user.validation.idnumber.required";
+        private static final String FIRST_NAME_REQUIRED_CODE = "register.user.validation.firstname.required";
+        private static final String LAST_NAME_REQUIRED_CODE = "register.user.validation.lastname.required";
+        private static final String EMAIL_REQUIRED_CODE = "register.user.validation.email.required";
+        private static final String COUNTRY_REQUIRED_CODE = "register.user.validation.country.required";
+        private static final String DEPARTMENT_REQUIRED_CODE = "register.user.validation.department.required";
+        private static final String CITY_REQUIRED_CODE = "register.user.validation.city.required";
 
         private UUID id;
         private UUID idType;
+        private String idTypeCode;
         private String idNumber;
         private String firstName;
         private String secondName;
         private String firstSurname;
         private String secondSurname;
+        private UUID countryId;
+        private UUID departmentId;
         private UUID homeCity;
         private String email;
         private String mobileNumber;
@@ -31,11 +36,14 @@ public class RegisterUserDomain implements SelfValidating {
         private RegisterUserDomain(final Builder builder) {
                 setId(builder.id);
                 setIdType(builder.idType);
+                setIdTypeCode(builder.idTypeCode);
                 setIdNumber(builder.idNumber);
                 setFirstName(builder.firstName);
                 setSecondName(builder.secondName);
                 setFirstSurname(builder.firstSurname);
                 setSecondSurname(builder.secondSurname);
+                setCountryId(builder.countryId);
+                setDepartmentId(builder.departmentId);
                 setHomeCity(builder.homeCity);
                 setEmail(builder.email);
                 setMobileNumber(builder.mobileNumber);
@@ -53,6 +61,10 @@ public class RegisterUserDomain implements SelfValidating {
 
         public UUID getIdType() {
                 return idType;
+        }
+
+        public String getIdTypeCode() {
+                return idTypeCode;
         }
 
         public String getIdNumber() {
@@ -73,6 +85,14 @@ public class RegisterUserDomain implements SelfValidating {
 
         public String getSecondSurname() {
                 return secondSurname;
+        }
+
+        public UUID getCountryId() {
+                return countryId;
+        }
+
+        public UUID getDepartmentId() {
+                return departmentId;
         }
 
         public UUID getHomeCity() {
@@ -107,24 +127,32 @@ public class RegisterUserDomain implements SelfValidating {
         public Notification validate() {
                 final var notification = Notification.create();
 
-                if (UUIDHelper.getDefault().equals(idType)) {
-                        notification.addError(ID_TYPE_REQUIRED_CODE, "Identification type is required");
-                }
-
                 if (TextHelper.isEmpty(idNumber)) {
-                        notification.addError(ID_NUMBER_REQUIRED_CODE, "Identification number is required");
+                        notification.addError(ID_NUMBER_REQUIRED_CODE, null);
                 }
 
                 if (TextHelper.isEmpty(firstName)) {
-                        notification.addError(FIRST_NAME_REQUIRED_CODE, "First name is required");
+                        notification.addError(FIRST_NAME_REQUIRED_CODE, null);
                 }
 
                 if (TextHelper.isEmpty(firstSurname)) {
-                        notification.addError(FIRST_SURNAME_REQUIRED_CODE, "First surname is required");
+                        notification.addError(LAST_NAME_REQUIRED_CODE, null);
                 }
 
-                if (!hasEmail() && !hasMobileNumber()) {
-                        notification.addError(CONTACT_REQUIRED_CODE, "At least one contact channel must be provided");
+                if (TextHelper.isEmpty(email)) {
+                        notification.addError(EMAIL_REQUIRED_CODE, null);
+                }
+
+                if (isMissing(countryId)) {
+                        notification.addError(COUNTRY_REQUIRED_CODE, null);
+                }
+
+                if (isMissing(departmentId)) {
+                        notification.addError(DEPARTMENT_REQUIRED_CODE, null);
+                }
+
+                if (isMissing(homeCity)) {
+                        notification.addError(CITY_REQUIRED_CODE, null);
                 }
 
                 return notification;
@@ -134,12 +162,16 @@ public class RegisterUserDomain implements SelfValidating {
                 setId(newId);
         }
 
+        public void updateIdType(final UUID newIdType) {
+                setIdType(newIdType);
+        }
+
         public void markEmailConfirmed() {
-                setEmailConfirmed(true);
+                        setEmailConfirmed(true);
         }
 
         public void markMobileNumberConfirmed() {
-                setMobileNumberConfirmed(true);
+                        setMobileNumberConfirmed(true);
         }
 
         private void setId(final UUID id) {
@@ -148,6 +180,10 @@ public class RegisterUserDomain implements SelfValidating {
 
         private void setIdType(final UUID idType) {
                 this.idType = UUIDHelper.getDefault(idType);
+        }
+
+        private void setIdTypeCode(final String idTypeCode) {
+                this.idTypeCode = TextHelper.isEmpty(idTypeCode) ? null : TextHelper.getDefaultWithTrim(idTypeCode);
         }
 
         private void setIdNumber(final String idNumber) {
@@ -170,6 +206,14 @@ public class RegisterUserDomain implements SelfValidating {
                 this.secondSurname = TextHelper.getDefaultWithTrim(secondSurname);
         }
 
+        private void setCountryId(final UUID countryId) {
+                this.countryId = UUIDHelper.getDefault(countryId);
+        }
+
+        private void setDepartmentId(final UUID departmentId) {
+                this.departmentId = UUIDHelper.getDefault(departmentId);
+        }
+
         private void setHomeCity(final UUID homeCity) {
                 this.homeCity = UUIDHelper.getDefault(homeCity);
         }
@@ -180,6 +224,10 @@ public class RegisterUserDomain implements SelfValidating {
 
         private void setMobileNumber(final String mobileNumber) {
                 this.mobileNumber = TextHelper.getDefaultWithTrim(mobileNumber);
+        }
+
+        private boolean isMissing(final UUID value) {
+                return value == null || UUIDHelper.getDefault().equals(value);
         }
 
         private void setEmailConfirmed(final boolean emailConfirmed) {
@@ -193,11 +241,14 @@ public class RegisterUserDomain implements SelfValidating {
         public static final class Builder {
                 private UUID id = UUIDHelper.getDefault();
                 private UUID idType = UUIDHelper.getDefault();
+                private String idTypeCode = TextHelper.getDefault();
                 private String idNumber = TextHelper.getDefault();
                 private String firstName = TextHelper.getDefault();
                 private String secondName = TextHelper.getDefault();
                 private String firstSurname = TextHelper.getDefault();
                 private String secondSurname = TextHelper.getDefault();
+                private UUID countryId = UUIDHelper.getDefault();
+                private UUID departmentId = UUIDHelper.getDefault();
                 private UUID homeCity = UUIDHelper.getDefault();
                 private String email = TextHelper.getDefault();
                 private String mobileNumber = TextHelper.getDefault();
@@ -211,6 +262,11 @@ public class RegisterUserDomain implements SelfValidating {
 
                 public Builder idType(final UUID idType) {
                         this.idType = idType;
+                        return this;
+                }
+
+                public Builder idTypeCode(final String idTypeCode) {
+                        this.idTypeCode = idTypeCode;
                         return this;
                 }
 
@@ -236,6 +292,16 @@ public class RegisterUserDomain implements SelfValidating {
 
                 public Builder secondSurname(final String secondSurname) {
                         this.secondSurname = secondSurname;
+                        return this;
+                }
+
+                public Builder countryId(final UUID countryId) {
+                        this.countryId = countryId;
+                        return this;
+                }
+
+                public Builder departmentId(final UUID departmentId) {
+                        this.departmentId = departmentId;
                         return this;
                 }
 

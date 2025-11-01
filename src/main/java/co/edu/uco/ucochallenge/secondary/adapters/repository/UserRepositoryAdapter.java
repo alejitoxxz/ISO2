@@ -18,12 +18,18 @@ import co.edu.uco.ucochallenge.user.findusers.application.usecase.domain.UserSum
 import co.edu.uco.ucochallenge.user.registeruser.application.port.RegisterUserRepositoryPort;
 import co.edu.uco.ucochallenge.user.registeruser.application.usecase.domain.ExistingUserSnapshotDomain;
 import co.edu.uco.ucochallenge.user.registeruser.application.usecase.domain.RegisterUserDomain;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.EntityNotFoundException;
+import jakarta.persistence.PersistenceContext;
 
 @Repository
 public class UserRepositoryAdapter implements RegisterUserRepositoryPort, FindUsersByFilterRepositoryPort,
                 ConfirmUserContactRepositoryPort {
 
         private final SpringDataUserRepository repository;
+
+        @PersistenceContext
+        private EntityManager entityManager;
 
         public UserRepositoryAdapter(final SpringDataUserRepository repository) {
                 this.repository = repository;
@@ -127,23 +133,29 @@ public class UserRepositoryAdapter implements RegisterUserRepositoryPort, FindUs
         }
 
         private UserEntity mapToEntity(final RegisterUserDomain domain) {
-                final var idTypeEntity = new IdTypeEntity.Builder()
-                                .id(domain.getIdType())
-                                .build();
+                final var idTypeId = domain.getIdType();
+                final var cityId = domain.getHomeCity();
 
-                final var cityEntity = new CityEntity.Builder()
-                                .id(domain.getHomeCity())
-                                .build();
+                if (UUIDHelper.getDefault().equals(idTypeId)) {
+                        throw new EntityNotFoundException("IdType identifier must not be empty");
+                }
+
+                if (UUIDHelper.getDefault().equals(cityId)) {
+                        throw new EntityNotFoundException("City identifier must not be empty");
+                }
+
+                final IdTypeEntity idTypeRef = entityManager.getReference(IdTypeEntity.class, idTypeId);
+                final CityEntity cityRef = entityManager.getReference(CityEntity.class, cityId);
 
                 return new UserEntity.Builder()
                                 .id(domain.getId())
-                                .idType(idTypeEntity)
+                                .idType(idTypeRef)
                                 .idNumber(domain.getIdNumber())
                                 .firstName(domain.getFirstName())
                                 .secondName(domain.getSecondName())
                                 .firstSurname(domain.getFirstSurname())
                                 .secondSurname(domain.getSecondSurname())
-                                .homeCity(cityEntity)
+                                .homeCity(cityRef)
                                 .email(domain.getEmail())
                                 .mobileNumber(domain.getMobileNumber())
                                 .emailConfirmed(domain.isEmailConfirmed())

@@ -3,28 +3,32 @@ package co.edu.uco.ucochallenge.user.registeruser.application.interactor.dto;
 import java.util.UUID;
 
 import co.edu.uco.ucochallenge.crosscuting.helper.TextHelper;
-import co.edu.uco.ucochallenge.crosscuting.helper.UUIDHelper;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 
-public record RegisterUserInputDTO(UUID idType, String idNumber, String firstName, 
-		String secondName, String firstSurname,
-		String secondSurname, UUID homeCity, String email, String mobileNumber) {
+public record RegisterUserInputDTO(
+                UUID idTypeId,
+                String idTypeCode,
+                @NotBlank(message = "register.user.validation.idnumber.required") String idNumber,
+                @NotBlank(message = "register.user.validation.firstname.required") String firstName,
+                String middleName,
+                @NotBlank(message = "register.user.validation.lastname.required") String lastName,
+                String secondLastName,
+                @Email(message = "register.user.validation.email.invalid") String email,
+                String mobile,
+                @NotNull(message = "register.user.validation.country.required") UUID countryId,
+                @NotNull(message = "register.user.validation.department.required") UUID departmentId,
+                @NotNull(message = "register.user.validation.city.required") UUID cityId) {
 
-	public static RegisterUserInputDTO normalize(final UUID idType, final String idNumber, final String firstName, 
-			final String secondName, final String firstSurname,
-			final String secondSurname, final UUID homeCity, final String email, final String mobileNumber){
-		var idTypeNormalize = UUIDHelper.getDefault(idType);
-		var idNumberNormalize = TextHelper.getDefaultWithTrim(idNumber);
-		var firstNameNormalize = TextHelper.getDefaultWithTrim(firstName);
-		var secondNameNormalize = TextHelper.getDefaultWithTrim(secondName);
-		var firstSurnameNormalize = TextHelper.getDefaultWithTrim(firstSurname);
-		var secondSurnameNormalize = TextHelper.getDefaultWithTrim(secondSurname);
-		var homeCityNormalize = UUIDHelper.getDefault(homeCity);
-		var emailNormalize = TextHelper.getDefaultWithTrim(email);
-		var mobileNumberNormalize = TextHelper.getDefaultWithTrim(mobileNumber);
-		
-		return new RegisterUserInputDTO(idTypeNormalize, idNumberNormalize, firstNameNormalize, 
-				secondNameNormalize, firstSurnameNormalize, secondSurnameNormalize, 
-				homeCityNormalize, emailNormalize, mobileNumberNormalize);
-	}
+        public RegisterUserInputDTO {
+                idTypeCode = TextHelper.isEmpty(idTypeCode) ? null : TextHelper.getDefaultWithTrim(idTypeCode);
+                idNumber = TextHelper.getDefaultWithTrim(idNumber);
+                firstName = TextHelper.getDefaultWithTrim(firstName);
+                middleName = TextHelper.isEmpty(middleName) ? null : TextHelper.getDefaultWithTrim(middleName);
+                lastName = TextHelper.getDefaultWithTrim(lastName);
+                secondLastName = TextHelper.isEmpty(secondLastName) ? null : TextHelper.getDefaultWithTrim(secondLastName);
+                email = TextHelper.isEmpty(email) ? null : TextHelper.getDefaultWithTrim(email);
+                mobile = TextHelper.isEmpty(mobile) ? null : TextHelper.getDefaultWithTrim(mobile);
+        }
 }
-	
