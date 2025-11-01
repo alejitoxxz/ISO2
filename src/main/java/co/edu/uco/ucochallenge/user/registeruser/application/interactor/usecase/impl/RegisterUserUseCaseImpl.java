@@ -78,11 +78,11 @@ public class RegisterUserUseCaseImpl implements RegisterUserUseCase {
                         return;
                 }
 
-                if (TextHelper.isEmpty(domain.getIdTypeCode())) {
+                if (TextHelper.isEmpty(domain.getIdTypeName())) {
                         throw new DomainValidationException("register.user.validation.idtype.required");
                 }
 
-                final var idType = idTypeQueryPort.findIdByCode(domain.getIdTypeCode())
+                final var idType = idTypeQueryPort.findIdByName(domain.getIdTypeName())
                                 .orElseThrow(() -> new DomainValidationException("register.user.validation.idtype.required"));
 
                 domain.updateIdType(idType);

@@ -9,7 +9,7 @@ import jakarta.validation.constraints.NotNull;
 
 public record RegisterUserInputDTO(
                 UUID idTypeId,
-                String idTypeCode,
+                String idTypeName,
                 @NotBlank(message = "register.user.validation.idnumber.required") String idNumber,
                 @NotBlank(message = "register.user.validation.firstname.required") String firstName,
                 String middleName,
@@ -22,7 +22,7 @@ public record RegisterUserInputDTO(
                 @NotNull(message = "register.user.validation.city.required") UUID cityId) {
 
         public RegisterUserInputDTO {
-                idTypeCode = TextHelper.isEmpty(idTypeCode) ? null : TextHelper.getDefaultWithTrim(idTypeCode);
+                idTypeName = TextHelper.isEmpty(idTypeName) ? null : TextHelper.getDefaultWithTrim(idTypeName);
                 idNumber = TextHelper.getDefaultWithTrim(idNumber);
                 firstName = TextHelper.getDefaultWithTrim(firstName);
                 middleName = TextHelper.isEmpty(middleName) ? null : TextHelper.getDefaultWithTrim(middleName);

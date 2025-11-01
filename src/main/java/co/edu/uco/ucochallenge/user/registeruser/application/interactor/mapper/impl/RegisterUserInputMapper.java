@@ -16,7 +16,7 @@ public class RegisterUserInputMapper implements DomainMapper<RegisterUserInputDT
                 return RegisterUserDomain.builder()
                                 .id(UUID.randomUUID())
                                 .idType(dto.idTypeId())
-                                .idTypeCode(dto.idTypeCode())
+                                .idTypeName(dto.idTypeName())
                                 .idNumber(dto.idNumber())
                                 .firstName(dto.firstName())
                                 .secondName(dto.middleName())
@@ -34,7 +34,7 @@ public class RegisterUserInputMapper implements DomainMapper<RegisterUserInputDT
         public RegisterUserInputDTO toDto(final RegisterUserDomain domain) {
                 return new RegisterUserInputDTO(
                                 domain.getIdType(),
-                                domain.getIdTypeCode(),
+                                domain.getIdTypeName(),
                                 domain.getIdNumber(),
                                 domain.getFirstName(),
                                 domain.getSecondName(),
