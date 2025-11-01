@@ -5,6 +5,7 @@ import java.util.UUID;
 
 import org.springframework.stereotype.Service;
 
+import co.edu.uco.ucochallenge.crosscuting.exception.BusinessException;
 import co.edu.uco.ucochallenge.crosscuting.exception.NotFoundException;
 import co.edu.uco.ucochallenge.secondary.adapters.repository.jpa.VerificationCodeRepository;
 import co.edu.uco.ucochallenge.user.confirmcontact.application.port.ConfirmUserContactRepositoryPort;
@@ -44,15 +45,13 @@ public class UserContactConfirmationServiceImpl implements UserContactConfirmati
 
         @Override
         @Transactional
-        public boolean verifyCode(String contact, String code) {
-                return codeRepository.findByContact(contact)
-                                .filter(stored -> stored.getCode().equals(code)
-                                                && stored.getExpiration().isAfter(LocalDateTime.now()))
-                                .map(valid -> {
-                                        userRepository.confirmEmailOrMobile(contact);
-                                        codeRepository.delete(valid);
-                                        return true;
-                                })
-                                .orElse(false);
+        public void verify(final String contact, final String code) {
+                final var stored = codeRepository.findByContact(contact)
+                                .filter(entity -> entity.getCode().equals(code)
+                                                && entity.getExpiration().isAfter(LocalDateTime.now()))
+                                .orElseThrow(() -> new BusinessException("user.contact.verification.invalid"));
+
+                userRepository.confirmEmailOrMobile(contact);
+                codeRepository.delete(stored);
         }
 }

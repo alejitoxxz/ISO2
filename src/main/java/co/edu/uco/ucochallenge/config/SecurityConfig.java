@@ -53,6 +53,7 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers("/actuator/health").permitAll()
+                        .requestMatchers("/uco-challenge/api/v1/users/verify-code").permitAll()
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(gatewaySignatureFilter, UsernamePasswordAuthenticationFilter.class)
