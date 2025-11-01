@@ -156,12 +156,12 @@ public class RegisterUserUseCaseImpl implements RegisterUserUseCase {
         private void sendConfirmations(final RegisterUserDomain domain) {
                 if (domain.hasEmail()) {
                         contactConfirmationPort.confirmEmail(domain.getEmail());
-                        domain.markEmailConfirmed();
+                        LOGGER.info("Correo de confirmación enviado a {}", domain.getEmail());
                 }
 
                 if (domain.hasMobileNumber()) {
                         contactConfirmationPort.confirmMobileNumber(domain.getMobileNumber());
-                        domain.markMobileNumberConfirmed();
+                        LOGGER.info("SMS de confirmación enviado a {}", domain.getMobileNumber());
                 }
         }
 
