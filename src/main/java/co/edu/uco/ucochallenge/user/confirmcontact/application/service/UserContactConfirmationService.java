@@ -7,4 +7,6 @@ public interface UserContactConfirmationService {
         void confirmEmail(UUID id);
 
         void confirmMobile(UUID id);
+
+        boolean verifyCode(String contact, String code);
 }

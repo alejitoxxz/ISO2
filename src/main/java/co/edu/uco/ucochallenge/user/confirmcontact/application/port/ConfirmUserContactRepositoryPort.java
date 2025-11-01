@@ -7,4 +7,6 @@ public interface ConfirmUserContactRepositoryPort {
         boolean confirmEmail(UUID id);
 
         boolean confirmMobileNumber(UUID id);
+
+        void confirmEmailOrMobile(String contact);
 }

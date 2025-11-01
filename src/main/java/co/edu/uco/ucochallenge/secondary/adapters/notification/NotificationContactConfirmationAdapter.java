@@ -1,25 +1,33 @@
 package co.edu.uco.ucochallenge.secondary.adapters.notification;
 
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
+import java.security.SecureRandom;
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.notificationapi.NotificationApi;
 import com.notificationapi.model.NotificationRequest;
 import com.notificationapi.model.User;
 
+import co.edu.uco.ucochallenge.secondary.adapters.repository.entity.VerificationCodeEntity;
+import co.edu.uco.ucochallenge.secondary.adapters.repository.jpa.VerificationCodeRepository;
 import co.edu.uco.ucochallenge.user.registeruser.application.port.ContactConfirmationPort;
 
 @Component
 public class NotificationContactConfirmationAdapter implements ContactConfirmationPort {
 
-    private final NotificationApi api;
+    private static final int CODE_UPPER_BOUND = 1_000_000;
 
-    public NotificationContactConfirmationAdapter(NotificationApi api) {
+    private final NotificationApi api;
+    private final VerificationCodeRepository codeRepository;
+    private final SecureRandom random = new SecureRandom();
+
+    public NotificationContactConfirmationAdapter(NotificationApi api, VerificationCodeRepository codeRepository) {
         this.api = api;
+        this.codeRepository = codeRepository;
     }
 
     @Override
@@ -32,19 +40,22 @@ public class NotificationContactConfirmationAdapter implements ContactConfirmati
         sendConfirmation(null, mobileNumber, "Confirma tu número móvil - UCO Challenge");
     }
 
+    @Transactional
     private void sendConfirmation(String email, String number, String subject) {
         try {
-            User user = new User(email != null ? email : number)
+            String contact = email != null ? email : number;
+            String code = String.format("%06d", random.nextInt(CODE_UPPER_BOUND));
+
+            codeRepository.findByContact(contact).ifPresent(codeRepository::delete);
+            codeRepository.save(new VerificationCodeEntity(contact, code, LocalDateTime.now().plusMinutes(15)));
+
+            User user = new User(contact)
                     .setEmail(email)
                     .setNumber(number);
 
-            String idForLink = (email != null ? email : number);
-            String confirmationLink = "https://ucochallenge.com/confirm?user="
-                    + URLEncoder.encode(idForLink, StandardCharsets.UTF_8);
-
             Map<String, Object> mergeTags = new HashMap<>();
-            mergeTags.put("name", idForLink);
-            mergeTags.put("confirmationLink", confirmationLink);
+            mergeTags.put("name", contact);
+            mergeTags.put("confirmationCode", code);
             mergeTags.put("currentYear", "2025");
             mergeTags.put("comment", subject);
 
@@ -53,9 +64,9 @@ public class NotificationContactConfirmationAdapter implements ContactConfirmati
                     .setMergeTags(mergeTags);
 
             String response = api.send(request);
-            System.out.println("[NotificationAPI] Confirmation sent: " + response);
+            System.out.println("[NotificationAPI] Sent code " + code + " to " + contact + " | Response: " + response);
         } catch (Exception e) {
-            System.err.println("[NotificationAPI] Error sending confirmation: " + e.getMessage());
+            System.err.println("[NotificationAPI] Error sending code: " + e.getMessage());
         }
     }
 }

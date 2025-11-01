@@ -57,4 +57,14 @@ public class UserController {
         userContactConfirmationService.confirmMobile(id);
         return ResponseEntity.noContent().build();
     }
+
+    @PostMapping("/users/verify-code")
+    public ResponseEntity<String> verifyCode(@RequestParam String contact, @RequestParam String code) {
+        boolean verified = userContactConfirmationService.verifyCode(contact, code);
+        if (verified) {
+            return ResponseEntity.ok("Verification successful");
+        } else {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid or expired code");
+        }
+    }
 }

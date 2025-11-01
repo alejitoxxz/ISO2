@@ -102,6 +102,19 @@ public class UserRepositoryAdapter implements RegisterUserRepositoryPort, FindUs
                                 .orElse(false);
         }
 
+        @Override
+        public void confirmEmailOrMobile(String contact) {
+                repository.findByEmail(contact).ifPresent(entity -> {
+                        entity.confirmEmail();
+                        repository.save(entity);
+                });
+
+                repository.findByMobileNumber(contact).ifPresent(entity -> {
+                        entity.confirmMobileNumber();
+                        repository.save(entity);
+                });
+        }
+
         private ExistingUserSnapshotDomain mapToSnapshot(final UserEntity entity) {
                 return ExistingUserSnapshotDomain.builder()
                                 .id(entity.getId())
