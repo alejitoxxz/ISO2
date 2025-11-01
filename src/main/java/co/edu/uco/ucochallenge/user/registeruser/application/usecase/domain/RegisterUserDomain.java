@@ -9,12 +9,10 @@ import co.edu.uco.ucochallenge.crosscuting.notification.SelfValidating;
 
 public class RegisterUserDomain implements SelfValidating {
 
-        private static final String ID_TYPE_REQUIRED_CODE = "register.user.validation.idtype.required";
         private static final String ID_NUMBER_REQUIRED_CODE = "register.user.validation.idnumber.required";
         private static final String FIRST_NAME_REQUIRED_CODE = "register.user.validation.firstname.required";
         private static final String LAST_NAME_REQUIRED_CODE = "register.user.validation.lastname.required";
         private static final String EMAIL_REQUIRED_CODE = "register.user.validation.email.required";
-        private static final String MOBILE_REQUIRED_CODE = "register.user.validation.mobilenumber.required";
         private static final String COUNTRY_REQUIRED_CODE = "register.user.validation.country.required";
         private static final String DEPARTMENT_REQUIRED_CODE = "register.user.validation.department.required";
         private static final String CITY_REQUIRED_CODE = "register.user.validation.city.required";
@@ -129,12 +127,6 @@ public class RegisterUserDomain implements SelfValidating {
         public Notification validate() {
                 final var notification = Notification.create();
 
-                final boolean hasIdType = !UUIDHelper.getDefault().equals(idType);
-                final boolean hasIdTypeCode = !TextHelper.isEmpty(idTypeCode);
-                if (!hasIdType && !hasIdTypeCode) {
-                        notification.addError(ID_TYPE_REQUIRED_CODE, null);
-                }
-
                 if (TextHelper.isEmpty(idNumber)) {
                         notification.addError(ID_NUMBER_REQUIRED_CODE, null);
                 }
@@ -151,19 +143,15 @@ public class RegisterUserDomain implements SelfValidating {
                         notification.addError(EMAIL_REQUIRED_CODE, null);
                 }
 
-                if (TextHelper.isEmpty(mobileNumber)) {
-                        notification.addError(MOBILE_REQUIRED_CODE, null);
-                }
-
-                if (UUIDHelper.getDefault().equals(countryId)) {
+                if (isMissing(countryId)) {
                         notification.addError(COUNTRY_REQUIRED_CODE, null);
                 }
 
-                if (UUIDHelper.getDefault().equals(departmentId)) {
+                if (isMissing(departmentId)) {
                         notification.addError(DEPARTMENT_REQUIRED_CODE, null);
                 }
 
-                if (UUIDHelper.getDefault().equals(homeCity)) {
+                if (isMissing(homeCity)) {
                         notification.addError(CITY_REQUIRED_CODE, null);
                 }
 
@@ -236,6 +224,10 @@ public class RegisterUserDomain implements SelfValidating {
 
         private void setMobileNumber(final String mobileNumber) {
                 this.mobileNumber = TextHelper.getDefaultWithTrim(mobileNumber);
+        }
+
+        private boolean isMissing(final UUID value) {
+                return value == null || UUIDHelper.getDefault().equals(value);
         }
 
         private void setEmailConfirmed(final boolean emailConfirmed) {
