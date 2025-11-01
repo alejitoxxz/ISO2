@@ -8,5 +8,5 @@ public interface UserContactConfirmationService {
 
         void confirmMobile(UUID id);
 
-        boolean verifyCode(String contact, String code);
+        void verify(String contact, String code);
 }
