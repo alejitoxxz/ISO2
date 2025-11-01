@@ -19,7 +19,7 @@ public class RegisterUserDomain implements SelfValidating {
 
         private UUID id;
         private UUID idType;
-        private String idTypeCode;
+        private String idTypeName;
         private String idNumber;
         private String firstName;
         private String secondName;
@@ -36,7 +36,7 @@ public class RegisterUserDomain implements SelfValidating {
         private RegisterUserDomain(final Builder builder) {
                 setId(builder.id);
                 setIdType(builder.idType);
-                setIdTypeCode(builder.idTypeCode);
+                setIdTypeName(builder.idTypeName);
                 setIdNumber(builder.idNumber);
                 setFirstName(builder.firstName);
                 setSecondName(builder.secondName);
@@ -63,8 +63,8 @@ public class RegisterUserDomain implements SelfValidating {
                 return idType;
         }
 
-        public String getIdTypeCode() {
-                return idTypeCode;
+        public String getIdTypeName() {
+                return idTypeName;
         }
 
         public String getIdNumber() {
@@ -182,8 +182,8 @@ public class RegisterUserDomain implements SelfValidating {
                 this.idType = UUIDHelper.getDefault(idType);
         }
 
-        private void setIdTypeCode(final String idTypeCode) {
-                this.idTypeCode = TextHelper.isEmpty(idTypeCode) ? null : TextHelper.getDefaultWithTrim(idTypeCode);
+        private void setIdTypeName(final String idTypeName) {
+                this.idTypeName = TextHelper.isEmpty(idTypeName) ? null : TextHelper.getDefaultWithTrim(idTypeName);
         }
 
         private void setIdNumber(final String idNumber) {
@@ -241,7 +241,7 @@ public class RegisterUserDomain implements SelfValidating {
         public static final class Builder {
                 private UUID id = UUIDHelper.getDefault();
                 private UUID idType = UUIDHelper.getDefault();
-                private String idTypeCode = TextHelper.getDefault();
+                private String idTypeName = TextHelper.getDefault();
                 private String idNumber = TextHelper.getDefault();
                 private String firstName = TextHelper.getDefault();
                 private String secondName = TextHelper.getDefault();
@@ -265,8 +265,8 @@ public class RegisterUserDomain implements SelfValidating {
                         return this;
                 }
 
-                public Builder idTypeCode(final String idTypeCode) {
-                        this.idTypeCode = idTypeCode;
+                public Builder idTypeName(final String idTypeName) {
+                        this.idTypeName = idTypeName;
                         return this;
                 }
 

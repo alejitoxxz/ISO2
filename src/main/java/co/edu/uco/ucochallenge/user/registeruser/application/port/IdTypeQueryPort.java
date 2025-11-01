@@ -7,5 +7,5 @@ public interface IdTypeQueryPort {
 
         boolean existsById(UUID id);
 
-        Optional<UUID> findIdByCode(String code);
+        Optional<UUID> findIdByName(String name);
 }

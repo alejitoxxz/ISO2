@@ -11,5 +11,7 @@ import co.edu.uco.ucochallenge.secondary.adapters.repository.entity.IdTypeEntity
 @Repository
 public interface IdTypeRepository extends JpaRepository<IdTypeEntity, UUID> {
 
-        Optional<IdTypeEntity> findByCode(String code);
+        Optional<IdTypeEntity> findByName(String name);
+
+        boolean existsByNameIgnoreCase(String name);
 }
