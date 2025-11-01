@@ -1,5 +1,7 @@
 package co.edu.uco.ucochallenge.secondary.adapters.notification;
 
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -22,12 +24,12 @@ public class NotificationContactConfirmationAdapter implements ContactConfirmati
 
     @Override
     public void confirmEmail(String email) {
-        sendConfirmation(email, null, "Confirmación de correo electrónico");
+        sendConfirmation(email, null, "Confirma tu correo electrónico - UCO Challenge");
     }
 
     @Override
     public void confirmMobileNumber(String mobileNumber) {
-        sendConfirmation(null, mobileNumber, "Confirmación de número móvil");
+        sendConfirmation(null, mobileNumber, "Confirma tu número móvil - UCO Challenge");
     }
 
     private void sendConfirmation(String email, String number, String subject) {
@@ -36,9 +38,13 @@ public class NotificationContactConfirmationAdapter implements ContactConfirmati
                     .setEmail(email)
                     .setNumber(number);
 
+            String idForLink = (email != null ? email : number);
+            String confirmationLink = "https://ucochallenge.com/confirm?user="
+                    + URLEncoder.encode(idForLink, StandardCharsets.UTF_8);
+
             Map<String, Object> mergeTags = new HashMap<>();
-            mergeTags.put("name", "Usuario");
-            mergeTags.put("confirmationLink", "https://ucochallenge.com/confirm?user=" + user.getIdentifier());
+            mergeTags.put("name", idForLink);
+            mergeTags.put("confirmationLink", confirmationLink);
             mergeTags.put("currentYear", "2025");
             mergeTags.put("comment", subject);
 
