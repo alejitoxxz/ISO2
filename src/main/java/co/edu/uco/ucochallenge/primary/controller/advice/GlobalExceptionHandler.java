@@ -2,9 +2,9 @@ package co.edu.uco.ucochallenge.primary.controller.advice;
 
 import java.util.Optional;
 
+import org.hibernate.exception.ConstraintViolationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.slf4j.MDC;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -13,89 +13,93 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import co.edu.uco.ucochallenge.application.ApiErrorResponse;
 import co.edu.uco.ucochallenge.crosscuting.exception.BusinessException;
 import co.edu.uco.ucochallenge.crosscuting.exception.DomainValidationException;
+import co.edu.uco.ucochallenge.crosscuting.exception.NotFoundException;
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.validation.ConstraintViolationException;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-        private static final Logger LOGGER = LoggerFactory.getLogger(GlobalExceptionHandler.class);
-        private static final String DEFAULT_CODE = "exception.general.unexpected";
+        private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
+        private static final String GENERIC_ERROR_MESSAGE = "An unexpected error has occurred";
 
         @ExceptionHandler(DomainValidationException.class)
-        public ResponseEntity<ErrorResponse> handleDomainValidation(final DomainValidationException exception,
+        public ResponseEntity<ApiErrorResponse> handleDomainValidation(final DomainValidationException exception,
                         final HttpServletRequest request) {
-                final var response = new ErrorResponse(exception.getCode(), HttpStatus.BAD_REQUEST.value());
-                logWarning(exception.getCode(), exception, request);
+                log.warn("DomainValidationException on request {}", request.getRequestURI(), exception);
+                final var response = ApiErrorResponse.businessError(exception.getCode());
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
         }
 
         @ExceptionHandler(MethodArgumentNotValidException.class)
-        public ResponseEntity<ErrorResponse> handleInvalidArguments(final MethodArgumentNotValidException exception,
+        public ResponseEntity<ApiErrorResponse> handleInvalidArguments(final MethodArgumentNotValidException exception,
                         final HttpServletRequest request) {
-                final String code = Optional.ofNullable(exception.getBindingResult().getFieldError())
+                final String message = Optional.ofNullable(exception.getBindingResult().getFieldError())
                                 .map(FieldError::getDefaultMessage)
-                                .orElse(DEFAULT_CODE);
-                final var response = new ErrorResponse(code, HttpStatus.BAD_REQUEST.value());
-                logWarning(code, exception, request);
+                                .orElse(GENERIC_ERROR_MESSAGE);
+                log.warn("MethodArgumentNotValidException on request {}", request.getRequestURI(), exception);
+                final var response = ApiErrorResponse.businessError(message);
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
         }
 
-        @ExceptionHandler(ConstraintViolationException.class)
-        public ResponseEntity<ErrorResponse> handleConstraintViolation(final ConstraintViolationException exception,
+        @ExceptionHandler(jakarta.validation.ConstraintViolationException.class)
+        public ResponseEntity<ApiErrorResponse> handleConstraintViolation(
+                        final jakarta.validation.ConstraintViolationException exception,
                         final HttpServletRequest request) {
-                final String code = exception.getConstraintViolations().stream()
-                                .map(violation -> Optional.ofNullable(violation.getMessage()).orElse(DEFAULT_CODE))
+                final String message = exception.getConstraintViolations().stream()
+                                .map(violation -> Optional.ofNullable(violation.getMessage()).orElse(GENERIC_ERROR_MESSAGE))
                                 .findFirst()
-                                .orElse(DEFAULT_CODE);
-                final var response = new ErrorResponse(code, HttpStatus.BAD_REQUEST.value());
-                logWarning(code, exception, request);
+                                .orElse(GENERIC_ERROR_MESSAGE);
+                log.warn("ConstraintViolationException on request {}", request.getRequestURI(), exception);
+                final var response = ApiErrorResponse.businessError(message);
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
         }
 
         @ExceptionHandler(BusinessException.class)
-        public ResponseEntity<ErrorResponse> handleBusinessException(final BusinessException exception,
+        public ResponseEntity<ApiErrorResponse> handleBusinessException(final BusinessException exception,
                         final HttpServletRequest request) {
-                final var response = new ErrorResponse(exception.getCode(), HttpStatus.CONFLICT.value());
-                logWarning(exception.getCode(), exception, request);
+                log.warn("BusinessException on request {}", request.getRequestURI(), exception);
+                final var response = ApiErrorResponse.businessError(exception.getCode());
                 return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
+        }
+
+        @ExceptionHandler(NotFoundException.class)
+        public ResponseEntity<ApiErrorResponse> handleNotFoundException(final NotFoundException exception,
+                        final HttpServletRequest request) {
+                log.warn("NotFoundException on request {}", request.getRequestURI(), exception);
+                final var response = ApiErrorResponse.businessError(exception.getMessage());
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
         }
 
         @ExceptionHandler(DataIntegrityViolationException.class)
-        public ResponseEntity<ErrorResponse> handleDataIntegrity(final DataIntegrityViolationException exception,
-                        final HttpServletRequest request) {
-                final var response = new ErrorResponse("register.user.email.duplicated", HttpStatus.CONFLICT.value());
-                logWarning(response.code(), exception, request);
-                return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
+        public ResponseEntity<ApiErrorResponse> handleDataIntegrity(final DataIntegrityViolationException exception) {
+                log.error("DataIntegrityViolationException on user registration", exception);
+                final var response = ApiErrorResponse.businessError("Data integrity violation (duplicate or invalid value)");
+                return new ResponseEntity<>(response, HttpStatus.CONFLICT);
+        }
+
+        @ExceptionHandler(ConstraintViolationException.class)
+        public ResponseEntity<ApiErrorResponse> handleConstraint(final ConstraintViolationException exception) {
+                log.error("ConstraintViolationException on user registration", exception);
+                final var response = ApiErrorResponse.businessError("Invalid data or foreign key constraint");
+                return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+        }
+
+        @ExceptionHandler(EntityNotFoundException.class)
+        public ResponseEntity<ApiErrorResponse> handleEntityNotFound(final EntityNotFoundException exception) {
+                log.error("EntityNotFoundException on user registration", exception);
+                final var response = ApiErrorResponse.businessError("Related catalog entity not found");
+                return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
         }
 
         @ExceptionHandler(Exception.class)
-        public ResponseEntity<ErrorResponse> handleGenericException(final Exception exception,
+        public ResponseEntity<ApiErrorResponse> handleGenericException(final Exception exception,
                         final HttpServletRequest request) {
-                final var response = new ErrorResponse(DEFAULT_CODE, HttpStatus.INTERNAL_SERVER_ERROR.value());
-                logError(response.code(), exception, request);
-                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
-        }
-
-        private void logWarning(final String code, final Exception exception, final HttpServletRequest request) {
-                LOGGER.warn("requestId={}, path={}, code={}, exception={}",
-                                MDC.get("requestId"),
-                                request.getRequestURI(),
-                                code,
-                                exception.getClass().getSimpleName());
-        }
-
-        private void logError(final String code, final Exception exception, final HttpServletRequest request) {
-                LOGGER.error("requestId={}, path={}, code={}, exception={}",
-                                MDC.get("requestId"),
-                                request.getRequestURI(),
-                                code,
-                                exception.getClass().getSimpleName(),
-                                exception);
-        }
-
-        public record ErrorResponse(String code, int status) {
+                log.error("Unexpected error on request {}", request.getRequestURI(), exception);
+                final var response = ApiErrorResponse.unexpectedError(GENERIC_ERROR_MESSAGE);
+                return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
         }
 }
