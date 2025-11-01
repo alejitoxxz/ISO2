@@ -19,11 +19,8 @@ import co.edu.uco.ucochallenge.user.registeruser.application.port.LocationQueryP
 import co.edu.uco.ucochallenge.user.registeruser.application.port.NotificationPort;
 import co.edu.uco.ucochallenge.user.registeruser.application.port.RegisterUserRepositoryPort;
 import co.edu.uco.ucochallenge.user.registeruser.application.usecase.domain.RegisterUserDomain;
-import lombok.RequiredArgsConstructor;
-
 @Service
 @Transactional
-@RequiredArgsConstructor
 public class RegisterUserUseCaseImpl implements RegisterUserUseCase {
 
         private static final Logger LOGGER = LoggerFactory.getLogger(RegisterUserUseCaseImpl.class);
@@ -35,6 +32,20 @@ public class RegisterUserUseCaseImpl implements RegisterUserUseCase {
         private final IdTypeQueryPort idTypeQueryPort;
         private final LocationQueryPort locationQueryPort;
         private final Supplier<UUID> idGenerator;
+
+        public RegisterUserUseCaseImpl(final RegisterUserRepositoryPort repositoryPort,
+                        final NotificationPort notificationPort,
+                        final ContactConfirmationPort contactConfirmationPort,
+                        final IdTypeQueryPort idTypeQueryPort,
+                        final LocationQueryPort locationQueryPort,
+                        final Supplier<UUID> idGenerator) {
+                this.repositoryPort = repositoryPort;
+                this.notificationPort = notificationPort;
+                this.contactConfirmationPort = contactConfirmationPort;
+                this.idTypeQueryPort = idTypeQueryPort;
+                this.locationQueryPort = locationQueryPort;
+                this.idGenerator = idGenerator;
+        }
 
         @Override
         public RegisterUserDomain execute(final RegisterUserDomain domain) {
